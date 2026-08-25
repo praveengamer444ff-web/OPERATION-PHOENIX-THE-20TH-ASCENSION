@@ -92,7 +92,7 @@ function App() {
           onToggleSound={toggleSound}
         />
 
-        <DailyQuote dayNumber={state.selectedDay} />
+        <DailyQuote dayNumber={state.selectedDay} commanderName={state.commanderName} />
 
         {isViewingPast && (
           <motion.div

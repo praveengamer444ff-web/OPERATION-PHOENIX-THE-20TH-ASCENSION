@@ -1,13 +1,30 @@
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Quote } from 'lucide-react';
 import { getQuoteForDay } from '../data/quotes';
 
 interface DailyQuoteProps {
   dayNumber: number;
+  commanderName: string;
 }
 
-export function DailyQuote({ dayNumber }: DailyQuoteProps) {
+export function DailyQuote({ dayNumber, commanderName }: DailyQuoteProps) {
   const quote = getQuoteForDay(dayNumber);
+  const hasSpokenGreeting = useRef(false);
+
+  useEffect(() => {
+    if (hasSpokenGreeting.current || !('speechSynthesis' in window)) return;
+
+    hasSpokenGreeting.current = true;
+    const name = commanderName.replace(/^COMMANDER\s+/i, '').trim();
+    const greeting = new SpeechSynthesisUtterance(
+      `Welcome to day ${dayNumber}, ${name}. Your daily motivational protocol is ready.`
+    );
+    greeting.rate = 0.92;
+    greeting.pitch = 0.9;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(greeting);
+  }, [commanderName, dayNumber]);
 
   return (
     <motion.section
