@@ -18,7 +18,7 @@ export function DailyQuote({ dayNumber, commanderName }: DailyQuoteProps) {
     hasSpokenGreeting.current = true;
     const name = commanderName.replace(/^COMMANDER\s+/i, '').trim();
     const greeting = new SpeechSynthesisUtterance(
-      `Welcome to day ${dayNumber}, ${name}. Your daily motivational protocol is ready.`
+      `Welcome to day ${dayNumber}, ${name}. Your daily motivational protocol is ready. Today's protocol: ${quote}`
     );
     greeting.rate = 0.92;
     greeting.pitch = 0.9;
