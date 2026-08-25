@@ -24,17 +24,17 @@ export function formatDateISO(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-export function getDateForDay(dayNumber: number): string {
-  const start = parseDate(CAMPAIGN_START);
+export function getDateForDay(dayNumber: number, campaignStart = CAMPAIGN_START): string {
+  const start = parseDate(campaignStart);
   const date = new Date(start);
   date.setDate(start.getDate() + dayNumber - 1);
   return formatDateISO(date);
 }
 
-export function getCurrentCampaignDay(): number {
+export function getCurrentCampaignDay(campaignStart = CAMPAIGN_START, campaignEnd = CAMPAIGN_END): number {
   const today = formatDateISO(new Date());
-  const start = parseDate(CAMPAIGN_START);
-  const end = parseDate(CAMPAIGN_END);
+  const start = parseDate(campaignStart);
+  const end = parseDate(campaignEnd);
   const now = parseDate(today);
 
   if (now < start) return 0;
@@ -57,13 +57,18 @@ export function getDayStatus(
   return 'failed';
 }
 
-export function createEmptyDayRecord(dayNumber: number): DayRecord {
+export function createEmptyDayRecord(
+  dayNumber: number,
+  campaignStart = CAMPAIGN_START,
+  campaignEnd = CAMPAIGN_END,
+  currentDay = getCurrentCampaignDay(campaignStart, campaignEnd)
+): DayRecord {
   return {
     dayNumber,
-    date: getDateForDay(dayNumber),
+    date: getDateForDay(dayNumber, campaignStart),
     questStates: {},
     totalScore: 0,
-    status: dayNumber > getCurrentCampaignDay() ? 'locked' : 'active',
+    status: dayNumber > currentDay ? 'locked' : 'active',
   };
 }
 

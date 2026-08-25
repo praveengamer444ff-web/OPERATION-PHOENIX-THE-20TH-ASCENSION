@@ -8,9 +8,13 @@ import { DailyQuote } from './components/DailyQuote';
 import { WhatsAppExport } from './components/WhatsAppExport';
 import { QUEST_MODULES } from './data/quests';
 import { usePhoenixState } from './hooks/usePhoenixState';
-import { CAMPAIGN_END, CAMPAIGN_START, formatDisplayDate, parseDate } from './utils/campaign';
+import { CAMPAIGN_START, formatDisplayDate, parseDate } from './utils/campaign';
+import { useAuth } from './auth/AuthContext';
+import { AuthScreen } from './components/AuthScreen';
+import { ChallengeSetup } from './components/ChallengeSetup';
 
 function App() {
+  const { user, signOut } = useAuth();
   const {
     state,
     currentDay,
@@ -24,7 +28,25 @@ function App() {
     selectDay,
     goToToday,
     toggleSound,
-  } = usePhoenixState();
+  } = usePhoenixState(user?.id ?? null, user?.startDate, user?.endDate);
+
+  if (!user) {
+    return (
+      <>
+        <ParticleBackground />
+        <AuthScreen />
+      </>
+    );
+  }
+
+  if (!user.startDate || !user.endDate || !user.whatsappNumber) {
+    return (
+      <>
+        <ParticleBackground />
+        <ChallengeSetup />
+      </>
+    );
+  }
 
   const daysUntilStart =
     currentDay === 0
@@ -58,7 +80,7 @@ function App() {
             <span className="text-radiant-gold">THE 20TH ASCENSION</span>
           </h1>
           <p className="text-xs sm:text-sm text-white/40 font-body mt-2 tracking-wider">
-            {formatDisplayDate(CAMPAIGN_START)} — {formatDisplayDate(CAMPAIGN_END)} • 30-Day Campaign
+            {formatDisplayDate(state.campaignStartDate)} — {formatDisplayDate(state.campaignEndDate)} • 30-Day Campaign
           </p>
         </motion.div>
 
@@ -81,7 +103,7 @@ function App() {
         )}
 
         <TopHUD
-          commanderName={state.commanderName}
+          commanderName={user.fullName}
           rank={rank}
           todayScore={todayScore}
           streak={state.streak}
@@ -92,7 +114,13 @@ function App() {
           onToggleSound={toggleSound}
         />
 
-        <DailyQuote dayNumber={state.selectedDay} commanderName={state.commanderName} />
+        <div className="flex justify-center -mt-2 mb-6">
+          <button type="button" onClick={signOut} className="text-xs text-white/40 hover:text-fire-orange font-body transition-colors">
+            Sign out {user.email}
+          </button>
+        </div>
+
+        <DailyQuote dayNumber={state.selectedDay} commanderName={user.fullName} />
 
         {isViewingPast && (
           <motion.div
@@ -156,7 +184,8 @@ function App() {
 
         {selectedDayRecord && (
           <WhatsAppExport
-            commanderName={state.commanderName}
+            commanderName={user.fullName}
+            whatsappNumber={user.whatsappNumber}
             dayNumber={state.selectedDay}
             streak={state.streak}
             todayScore={todayScore}

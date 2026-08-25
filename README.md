@@ -25,8 +25,10 @@ npm run preview
 - **Daily Quest Grid** — 4 modules, 100 PTS/day across Physical, Mental, Skill, and Discipline
 - **Rank System** — Novice Phoenix → Rising Warrior → Apex Commander → Phoenix Titan
 - **Streak Tracking** — Consecutive 70+ point days with flame animation
-- **LocalStorage** — All progress auto-saved on every change
-- **WhatsApp Export** — One-click daily dispatch to +94775259852
+- **LocalStorage** — Local-first progress persistence for the prototype
+- **Personalized Voice** — Dynamic name injection with a replay control and browser fallback
+- **Security foundation** — Sanitization and profile validation helpers in `src/utils/security.ts`
+- **Production architecture** — Auth, RLS, CSRF, rate limiting, CSP, and server-side WhatsApp guidance in `SECURITY_ARCHITECTURE.md`
 
 ## Tech Stack
 
@@ -35,3 +37,8 @@ npm run preview
 - Tailwind CSS
 - Framer Motion
 - Lucide React
+- DOMPurify
+
+## Production note
+
+The current app is a frontend prototype. Connect Supabase/Firebase and a server-side Twilio function before treating authentication, user data, or WhatsApp delivery as production-secure. Do not put provider secrets in client-side environment variables.

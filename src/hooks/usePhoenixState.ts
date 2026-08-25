@@ -15,15 +15,21 @@ import {
 import { getRankForScore } from '../utils/campaign';
 import { RANKS } from '../types';
 
-export function usePhoenixState() {
-  const [state, setState] = useState<AppState>(() => loadState());
+export function usePhoenixState(userId: string | null = null, campaignStart?: string, campaignEnd?: string) {
+  const startDate = campaignStart ?? undefined;
+  const endDate = campaignEnd ?? undefined;
+  const [state, setState] = useState<AppState>(() => loadState(userId ?? 'guest', startDate, endDate));
   const [currentDate, setCurrentDate] = useState(() => new Date());
-  const currentDay = useMemo(() => getCurrentCampaignDay(), [currentDate]);
+  const currentDay = useMemo(() => getCurrentCampaignDay(state.campaignStartDate, state.campaignEndDate), [currentDate, state.campaignStartDate, state.campaignEndDate]);
 
   useEffect(() => {
     const refreshTimer = window.setInterval(() => setCurrentDate(new Date()), 60_000);
     return () => window.clearInterval(refreshTimer);
   }, []);
+
+  useEffect(() => {
+    if (userId) setState(loadState(userId, startDate, endDate));
+  }, [userId, startDate, endDate]);
 
   const selectedDayRecord = state.days[state.selectedDay];
   const todayScore = selectedDayRecord?.totalScore ?? 0;
@@ -33,8 +39,8 @@ export function usePhoenixState() {
   const isEditable = state.selectedDay === currentDay && currentDay > 0;
 
   useEffect(() => {
-    saveState(state);
-  }, [state]);
+    if (userId) saveState(state, userId);
+  }, [state, userId]);
 
   const toggleQuest = useCallback(
     (questId: string) => {

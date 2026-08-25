@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Quote } from 'lucide-react';
+import { Quote, Volume2 } from 'lucide-react';
 import { getQuoteForDay } from '../data/quotes';
 
 interface DailyQuoteProps {
@@ -12,19 +12,25 @@ export function DailyQuote({ dayNumber, commanderName }: DailyQuoteProps) {
   const quote = getQuoteForDay(dayNumber);
   const hasSpokenGreeting = useRef(false);
 
-  useEffect(() => {
-    if (hasSpokenGreeting.current || !('speechSynthesis' in window)) return;
+  const speakGreeting = () => {
+    if (!('speechSynthesis' in window)) return;
 
-    hasSpokenGreeting.current = true;
-    const name = commanderName.replace(/^COMMANDER\s+/i, '').trim();
+    const name = commanderName.replace(/^COMMANDER\s+/i, '').trim() || 'Commander';
     const greeting = new SpeechSynthesisUtterance(
-      `Welcome to day ${dayNumber}, ${name}. Your daily motivational protocol is ready. Today's protocol: ${quote}`
+      `Welcome back, ${name}! Ready for today's challenge? Today's protocol: ${quote}`
     );
     greeting.rate = 0.92;
     greeting.pitch = 0.9;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(greeting);
-  }, [commanderName, dayNumber]);
+  };
+
+  useEffect(() => {
+    if (hasSpokenGreeting.current || !('speechSynthesis' in window)) return;
+
+    hasSpokenGreeting.current = true;
+    speakGreeting();
+  }, [commanderName, dayNumber, quote]);
 
   return (
     <motion.section
@@ -38,9 +44,20 @@ export function DailyQuote({ dayNumber, commanderName }: DailyQuoteProps) {
           <Quote className="w-5 h-5 text-fire-orange" />
         </div>
         <div>
-          <p className="text-xs text-fire-orange/70 uppercase tracking-[0.2em] font-body mb-2">
-            Daily Motivational Protocol
-          </p>
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <p className="text-xs text-fire-orange/70 uppercase tracking-[0.2em] font-body">
+              Daily Motivational Protocol
+            </p>
+            <button
+              type="button"
+              onClick={speakGreeting}
+              className="sound-toggle"
+              aria-label="Play daily greeting"
+              title="Play daily greeting"
+            >
+              <Volume2 className="w-4 h-4 text-electric-blue" />
+            </button>
+          </div>
           <blockquote className="font-display text-sm sm:text-base md:text-lg font-medium text-white/90 leading-relaxed italic">
             "{quote}"
           </blockquote>

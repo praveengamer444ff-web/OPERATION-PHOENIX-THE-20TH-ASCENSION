@@ -11,6 +11,7 @@ import { getQuoteForDay } from '../data/quotes';
 
 interface WhatsAppExportProps {
   commanderName: string;
+  whatsappNumber: string;
   dayNumber: number;
   streak: number;
   todayScore: number;
@@ -64,7 +65,7 @@ export function WhatsAppExport(props: WhatsAppExportProps) {
   const handleSend = () => {
     const message = buildWhatsAppMessage(props);
     const encoded = encodeURIComponent(message);
-    const url = `https://wa.me/94775259852?text=${encoded}`;
+    const url = `https://wa.me/${props.whatsappNumber.replace('+', '')}?text=${encoded}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 

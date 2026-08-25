@@ -11,11 +11,11 @@ import {
 } from './campaign';
 import { CAMPAIGN_DAYS } from '../types';
 
-function createInitialDays(): Record<number, ReturnType<typeof createEmptyDayRecord>> {
+function createInitialDays(campaignStart: string, campaignEnd: string): Record<number, ReturnType<typeof createEmptyDayRecord>> {
   const days: Record<number, ReturnType<typeof createEmptyDayRecord>> = {};
-  const currentDay = getCurrentCampaignDay();
+  const currentDay = getCurrentCampaignDay(campaignStart, campaignEnd);
   for (let i = 1; i <= CAMPAIGN_DAYS; i++) {
-    days[i] = createEmptyDayRecord(i);
+    days[i] = createEmptyDayRecord(i, campaignStart, campaignEnd, currentDay);
     if (i < currentDay) {
       days[i] = recalculateDayRecord(days[i], currentDay);
     }
@@ -23,13 +23,13 @@ function createInitialDays(): Record<number, ReturnType<typeof createEmptyDayRec
   return days;
 }
 
-export function createInitialState(): AppState {
-  const currentDay = getCurrentCampaignDay();
-  const days = createInitialDays();
+export function createInitialState(campaignStart = CAMPAIGN_START, campaignEnd = CAMPAIGN_END): AppState {
+  const currentDay = getCurrentCampaignDay(campaignStart, campaignEnd);
+  const days = createInitialDays(campaignStart, campaignEnd);
   return {
     commanderName: 'COMMANDER PRAVEEN',
-    campaignStartDate: CAMPAIGN_START,
-    campaignEndDate: CAMPAIGN_END,
+    campaignStartDate: campaignStart,
+    campaignEndDate: campaignEnd,
     streak: 0,
     totalXP: 0,
     soundEnabled: false,
@@ -39,20 +39,20 @@ export function createInitialState(): AppState {
   };
 }
 
-export function loadState(): AppState {
+export function loadState(userId = 'guest', campaignStart = CAMPAIGN_START, campaignEnd = CAMPAIGN_END): AppState {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return createInitialState();
+    const raw = localStorage.getItem(`${STORAGE_KEY}:${userId}`);
+    if (!raw) return createInitialState(campaignStart, campaignEnd);
 
     const parsed = JSON.parse(raw) as AppState;
-    const currentDay = getCurrentCampaignDay();
+    const currentDay = getCurrentCampaignDay(campaignStart, campaignEnd);
 
-    const days = { ...createInitialDays(), ...parsed.days };
+    const days = { ...createInitialDays(campaignStart, campaignEnd), ...parsed.days };
     for (let i = 1; i <= CAMPAIGN_DAYS; i++) {
       if (days[i]) {
         days[i] = recalculateDayRecord(days[i], currentDay);
       } else {
-        days[i] = createEmptyDayRecord(i);
+        days[i] = createEmptyDayRecord(i, campaignStart, campaignEnd, currentDay);
       }
     }
 
@@ -65,23 +65,23 @@ export function loadState(): AppState {
         : 1;
 
     return {
-      ...createInitialState(),
+      ...createInitialState(campaignStart, campaignEnd),
       ...parsed,
-      campaignStartDate: CAMPAIGN_START,
-      campaignEndDate: CAMPAIGN_END,
+      campaignStartDate: campaignStart,
+      campaignEndDate: campaignEnd,
       days,
       streak,
       totalXP,
       selectedDay,
     };
   } catch {
-    return createInitialState();
+    return createInitialState(campaignStart, campaignEnd);
   }
 }
 
-export function saveState(state: AppState): void {
+export function saveState(state: AppState, userId = 'guest'): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(`${STORAGE_KEY}:${userId}`, JSON.stringify(state));
   } catch {
     /* storage full or unavailable */
   }
